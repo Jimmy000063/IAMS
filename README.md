@@ -631,5 +631,4 @@ Specifically **not** implemented or claimed:
 
 ## Licence
 
-Proprietary - Ishvara Tech Consulting LLP. All dependencies are free and
-open-source.
+Proprietary, all rights reserved. All dependencies are free and open-source.
