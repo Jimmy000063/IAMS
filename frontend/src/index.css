@@ -1,0 +1,728 @@
+@import 'tailwindcss';
+
+/* ===========================================================================
+   Design tokens
+   ---------------------------------------------------------------------------
+   Tailwind v4 is configured in CSS. Every colour, radius, shadow and duration
+   the app uses is declared here, so appearance is a change to this file rather
+   than a search across components.
+
+   THEMING MODEL
+   -------------
+   Nothing below hard-codes a hue. The brand, accent and cool ramps are
+   generated from control variables, and every surface tint is derived from the
+   brand hue, so the whole interface turns together:
+
+     --brand-hue      the primary hue, in oklch degrees
+     --brand-chroma   a multiplier on brand saturation (1 = full, 0 = grey)
+     --accent-hue     the secondary hue, for emphasis and pending states
+     --cool-hue       a third hue, for gradients and chart series only
+     --tint-chroma    a multiplier on how much surfaces pick up the brand hue
+
+   A palette is therefore five numbers, declared once under
+   `:root[data-palette='...']`, and switching one attribute on <html> restyles
+   the application with no rebuild and no reload. Status colours - success,
+   warning, danger - are deliberately NOT themed: red must mean red in every
+   palette, or a payroll error stops being legible.
+
+   The visual language is "calm, precise, luminous". This system handles
+   payroll, so it has to read as trustworthy rather than playful: depth comes
+   from layered light and hairline borders, not from heavy shadows or novelty.
+   =========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   Dark variant
+   ---------------------------------------------------------------------------
+   Redefined so that `dark:` follows the CHOSEN mode, not only the operating
+   system. Without this, picking dark in the interface would change the surface
+   variables while every `dark:` utility stayed in light mode - which is half a
+   theme. An absent `data-mode` means "follow the system".
+   --------------------------------------------------------------------------- */
+
+@custom-variant dark {
+  &:where([data-mode='dark'], [data-mode='dark'] *) {
+    @slot;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &:where(:not([data-mode='light'], [data-mode='light'] *)) {
+      @slot;
+    }
+  }
+}
+
+@theme {
+  /* -- brand -------------------------------------------------------------
+     Lightness and relative chroma are fixed; hue and saturation come from the
+     active palette. The ramp is tuned for contrast at small sizes in dense
+     attendance tables and checked for WCAG AA on both surfaces. */
+  --color-brand-50: oklch(0.971 calc(0.014 * var(--brand-chroma)) var(--brand-hue));
+  --color-brand-100: oklch(0.936 calc(0.032 * var(--brand-chroma)) var(--brand-hue));
+  --color-brand-200: oklch(0.878 calc(0.061 * var(--brand-chroma)) var(--brand-hue));
+  --color-brand-300: oklch(0.798 calc(0.1 * var(--brand-chroma)) var(--brand-hue));
+  --color-brand-400: oklch(0.698 calc(0.14 * var(--brand-chroma)) var(--brand-hue));
+  --color-brand-500: oklch(0.606 calc(0.173 * var(--brand-chroma)) var(--brand-hue));
+  --color-brand-600: oklch(0.526 calc(0.186 * var(--brand-chroma)) var(--brand-hue));
+  --color-brand-700: oklch(0.452 calc(0.168 * var(--brand-chroma)) var(--brand-hue));
+  --color-brand-800: oklch(0.384 calc(0.139 * var(--brand-chroma)) var(--brand-hue));
+  --color-brand-900: oklch(0.329 calc(0.112 * var(--brand-chroma)) var(--brand-hue));
+  --color-brand-950: oklch(0.231 calc(0.08 * var(--brand-chroma)) var(--brand-hue));
+
+  /* -- accent, used sparingly for emphasis and pending states ------------ */
+  --color-accent-50: oklch(0.98 0.021 var(--accent-hue));
+  --color-accent-100: oklch(0.954 0.052 var(--accent-hue));
+  --color-accent-200: oklch(0.91 0.09 var(--accent-hue));
+  --color-accent-300: oklch(0.852 0.13 var(--accent-hue));
+  --color-accent-500: oklch(0.769 0.166 calc(var(--accent-hue) - 13));
+  --color-accent-600: oklch(0.666 0.157 calc(var(--accent-hue) - 23));
+  --color-accent-700: oklch(0.555 0.135 calc(var(--accent-hue) - 27));
+  --color-accent-800: oklch(0.47 0.115 calc(var(--accent-hue) - 29));
+  --color-accent-900: oklch(0.395 0.098 calc(var(--accent-hue) - 30));
+
+  /* -- a cool third hue, for gradients and chart series only -------------- */
+  --color-cool-300: oklch(0.86 0.09 calc(var(--cool-hue) - 5));
+  --color-cool-500: oklch(0.72 0.12 var(--cool-hue));
+  --color-cool-600: oklch(0.63 0.12 calc(var(--cool-hue) + 4));
+
+  /* -- semantic status, fixed across every palette ----------------------- */
+  --color-success-50: oklch(0.98 0.02 155);
+  --color-success-100: oklch(0.95 0.045 155);
+  --color-success-400: oklch(0.78 0.12 155);
+  --color-success-600: oklch(0.6 0.13 155);
+  --color-success-700: oklch(0.52 0.12 155);
+  --color-success-900: oklch(0.37 0.08 155);
+
+  --color-warning-50: oklch(0.98 0.022 90);
+  --color-warning-100: oklch(0.96 0.05 90);
+  --color-warning-400: oklch(0.83 0.14 85);
+  --color-warning-600: oklch(0.72 0.15 75);
+  --color-warning-700: oklch(0.6 0.14 60);
+  --color-warning-900: oklch(0.42 0.1 58);
+
+  --color-danger-50: oklch(0.975 0.015 20);
+  --color-danger-100: oklch(0.94 0.035 20);
+  --color-danger-400: oklch(0.72 0.17 23);
+  --color-danger-600: oklch(0.58 0.2 23);
+  --color-danger-700: oklch(0.5 0.19 23);
+  --color-danger-900: oklch(0.37 0.14 23);
+
+  /* -- typography -------------------------------------------------------- */
+  --font-sans:
+    'Inter var', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono',
+    monospace;
+
+  /* -- elevation ---------------------------------------------------------
+     Shadows carry a trace of the brand hue rather than pure black: a neutral
+     black shadow over a tinted surface reads as dirt, especially in dark mode. */
+  --shadow-card:
+    0 1px 2px 0 oklch(0.2 0.03 var(--brand-hue) / 0.05),
+    0 1px 3px 0 oklch(0.2 0.03 var(--brand-hue) / 0.07);
+  --shadow-raised:
+    0 4px 6px -1px oklch(0.2 0.03 var(--brand-hue) / 0.08),
+    0 2px 4px -2px oklch(0.2 0.03 var(--brand-hue) / 0.06);
+  --shadow-lifted:
+    0 12px 20px -8px oklch(0.2 0.03 var(--brand-hue) / 0.16),
+    0 4px 8px -4px oklch(0.2 0.03 var(--brand-hue) / 0.1);
+  --shadow-overlay:
+    0 24px 48px -12px oklch(0.15 0.03 var(--brand-hue) / 0.24),
+    0 8px 16px -8px oklch(0.15 0.03 var(--brand-hue) / 0.16);
+  --shadow-glow:
+    0 0 0 1px oklch(0.606 0.173 var(--brand-hue) / 0.3),
+    0 8px 24px -8px oklch(0.606 0.173 var(--brand-hue) / 0.4);
+
+  /* -- motion -------------------------------------------------------------
+     One easing curve for nearly everything, so the interface moves as a single
+     object rather than a collection of independently animated parts. */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+  --duration-slow: 420ms;
+
+  /* -- layout ------------------------------------------------------------ */
+  --spacing-sidebar: 16.5rem;
+  --spacing-sidebar-collapsed: 4.5rem;
+  --spacing-topbar: 3.75rem;
+
+  /* -- shape, overridable per theme below -------------------------------- */
+  --radius-card: 0.875rem;
+  --radius-panel: 1.125rem;
+}
+
+/* ===========================================================================
+   Colours
+   ---------------------------------------------------------------------------
+   Five numbers each. Violet is the default; `data-palette` overrides it. Keep
+   this list in step with PALETTES in `src/lib/appearance.ts`, which is what the
+   menu renders.
+   =========================================================================== */
+
+:root,
+:root[data-palette='violet'] {
+  --brand-hue: 277;
+  --brand-chroma: 1;
+  --accent-hue: 85;
+  --cool-hue: 210;
+  --tint-chroma: 1;
+}
+
+:root[data-palette='blue'] {
+  --brand-hue: 248;
+  --brand-chroma: 1;
+  --accent-hue: 96;
+  --cool-hue: 200;
+  --tint-chroma: 1;
+}
+
+:root[data-palette='teal'] {
+  --brand-hue: 193;
+  --brand-chroma: 0.92;
+  --accent-hue: 78;
+  --cool-hue: 168;
+  --tint-chroma: 0.9;
+}
+
+:root[data-palette='green'] {
+  --brand-hue: 156;
+  --brand-chroma: 0.88;
+  --accent-hue: 96;
+  --cool-hue: 192;
+  --tint-chroma: 0.85;
+}
+
+:root[data-palette='orange'] {
+  --brand-hue: 52;
+  --brand-chroma: 0.95;
+  --accent-hue: 32;
+  --cool-hue: 128;
+  --tint-chroma: 0.9;
+}
+
+:root[data-palette='red'] {
+  --brand-hue: 25;
+  --brand-chroma: 1.03;
+  --accent-hue: 70;
+  --cool-hue: 340;
+  --tint-chroma: 0.95;
+}
+
+:root[data-palette='pink'] {
+  --brand-hue: 348;
+  --brand-chroma: 1.05;
+  --accent-hue: 55;
+  --cool-hue: 310;
+  --tint-chroma: 1;
+}
+
+/* Near-neutral. For anyone who wants the data to carry the only colour on
+   screen. */
+:root[data-palette='slate'] {
+  --brand-hue: 265;
+  --brand-chroma: 0.24;
+  --accent-hue: 85;
+  --cool-hue: 230;
+  --tint-chroma: 0.45;
+}
+
+/* ===========================================================================
+   Surface roles
+   ---------------------------------------------------------------------------
+   Named by role rather than by colour, so dark mode is a redefinition here
+   instead of a `dark:` variant on every element. Chroma is multiplied by
+   --tint-chroma and the hue taken from the palette, so surfaces warm or cool
+   with the theme instead of staying stubbornly indigo-grey.
+   =========================================================================== */
+
+:root {
+  --surface-page: oklch(0.975 calc(0.004 * var(--tint-chroma)) var(--brand-hue));
+  --surface-raised: oklch(1 0 0);
+  --surface-sunken: oklch(0.948 calc(0.006 * var(--tint-chroma)) var(--brand-hue));
+  --surface-field: oklch(0.984 calc(0.004 * var(--tint-chroma)) var(--brand-hue));
+  --surface-border: oklch(0.9 calc(0.008 * var(--tint-chroma)) var(--brand-hue));
+  --surface-border-strong: oklch(0.82 calc(0.012 * var(--tint-chroma)) var(--brand-hue));
+
+  /* Glass: a translucent panel over the ambient background. The highlight is
+     a 1px inner line along the top edge, which is what makes a flat panel read
+     as a lit surface rather than a painted rectangle. */
+  --surface-glass: oklch(1 0 0 / 0.72);
+  --surface-glass-strong: oklch(1 0 0 / 0.86);
+  --surface-highlight: oklch(1 0 0 / 0.9);
+  --surface-veil: oklch(0.2 0.02 var(--brand-hue) / 0.4);
+
+  --text-primary: oklch(0.23 calc(0.02 * var(--tint-chroma)) var(--brand-hue));
+  --text-secondary: oklch(0.47 calc(0.016 * var(--tint-chroma)) var(--brand-hue));
+  --text-muted: oklch(0.6 calc(0.014 * var(--tint-chroma)) var(--brand-hue));
+  --text-inverse: oklch(0.99 0 0);
+
+  /* Focus and field states, so a control's lit edge is one definition rather
+     than a ring utility repeated on every input. */
+  --ring-focus: oklch(0.606 calc(0.173 * var(--brand-chroma)) var(--brand-hue) / 0.18);
+  --shadow-field-inset: inset 0 1px 2px oklch(0.2 0.02 var(--brand-hue) / 0.05);
+
+  /* The ambient wash behind everything. Three soft colour fields, far enough
+     apart not to read as a gradient banner. */
+  --ambient-one: oklch(0.606 calc(0.173 * var(--brand-chroma)) var(--brand-hue) / 0.1);
+  --ambient-two: oklch(0.72 0.12 var(--cool-hue) / 0.08);
+  --ambient-three: oklch(0.769 0.166 var(--accent-hue) / 0.05);
+}
+
+/* Dark surfaces. Declared twice because CSS has no way to share a block
+   between a media query and an attribute selector: once for "the system is
+   dark and the user has not overridden it", once for "the user chose dark". */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode='light']) {
+    --surface-page: oklch(0.165 calc(0.014 * var(--tint-chroma)) var(--brand-hue));
+    --surface-raised: oklch(0.215 calc(0.016 * var(--tint-chroma)) var(--brand-hue));
+    --surface-sunken: oklch(0.14 calc(0.012 * var(--tint-chroma)) var(--brand-hue));
+    --surface-field: oklch(0.185 calc(0.014 * var(--tint-chroma)) var(--brand-hue));
+    --surface-border: oklch(0.3 calc(0.018 * var(--tint-chroma)) var(--brand-hue));
+    --surface-border-strong: oklch(0.4 calc(0.02 * var(--tint-chroma)) var(--brand-hue));
+
+    --surface-glass: oklch(0.215 calc(0.016 * var(--tint-chroma)) var(--brand-hue) / 0.72);
+    --surface-glass-strong: oklch(
+      0.215 calc(0.016 * var(--tint-chroma)) var(--brand-hue) / 0.88
+    );
+    --surface-highlight: oklch(1 0 0 / 0.08);
+    --surface-veil: oklch(0.1 0.015 var(--brand-hue) / 0.6);
+
+    --text-primary: oklch(0.96 calc(0.004 * var(--tint-chroma)) var(--brand-hue));
+    --text-secondary: oklch(0.78 calc(0.01 * var(--tint-chroma)) var(--brand-hue));
+    --text-muted: oklch(0.63 calc(0.012 * var(--tint-chroma)) var(--brand-hue));
+    --text-inverse: oklch(0.18 0.01 var(--brand-hue));
+
+    --ring-focus: oklch(0.698 calc(0.14 * var(--brand-chroma)) var(--brand-hue) / 0.28);
+    --shadow-field-inset: inset 0 1px 2px oklch(0 0 0 / 0.2);
+
+    --ambient-one: oklch(0.606 calc(0.173 * var(--brand-chroma)) var(--brand-hue) / 0.18);
+    --ambient-two: oklch(0.72 0.12 var(--cool-hue) / 0.12);
+    --ambient-three: oklch(0.769 0.166 var(--accent-hue) / 0.07);
+  }
+}
+
+:root[data-mode='dark'] {
+  --surface-page: oklch(0.165 calc(0.014 * var(--tint-chroma)) var(--brand-hue));
+  --surface-raised: oklch(0.215 calc(0.016 * var(--tint-chroma)) var(--brand-hue));
+  --surface-sunken: oklch(0.14 calc(0.012 * var(--tint-chroma)) var(--brand-hue));
+  --surface-field: oklch(0.185 calc(0.014 * var(--tint-chroma)) var(--brand-hue));
+  --surface-border: oklch(0.3 calc(0.018 * var(--tint-chroma)) var(--brand-hue));
+  --surface-border-strong: oklch(0.4 calc(0.02 * var(--tint-chroma)) var(--brand-hue));
+
+  --surface-glass: oklch(0.215 calc(0.016 * var(--tint-chroma)) var(--brand-hue) / 0.72);
+  --surface-glass-strong: oklch(0.215 calc(0.016 * var(--tint-chroma)) var(--brand-hue) / 0.88);
+  --surface-highlight: oklch(1 0 0 / 0.08);
+  --surface-veil: oklch(0.1 0.015 var(--brand-hue) / 0.6);
+
+  --text-primary: oklch(0.96 calc(0.004 * var(--tint-chroma)) var(--brand-hue));
+  --text-secondary: oklch(0.78 calc(0.01 * var(--tint-chroma)) var(--brand-hue));
+  --text-muted: oklch(0.63 calc(0.012 * var(--tint-chroma)) var(--brand-hue));
+  --text-inverse: oklch(0.18 0.01 var(--brand-hue));
+
+  --ring-focus: oklch(0.698 calc(0.14 * var(--brand-chroma)) var(--brand-hue) / 0.28);
+  --shadow-field-inset: inset 0 1px 2px oklch(0 0 0 / 0.2);
+
+  --ambient-one: oklch(0.606 calc(0.173 * var(--brand-chroma)) var(--brand-hue) / 0.18);
+  --ambient-two: oklch(0.72 0.12 var(--cool-hue) / 0.12);
+  --ambient-three: oklch(0.769 0.166 var(--accent-hue) / 0.07);
+}
+
+@theme inline {
+  --color-page: var(--surface-page);
+  --color-raised: var(--surface-raised);
+  --color-sunken: var(--surface-sunken);
+  --color-field: var(--surface-field);
+  --color-line: var(--surface-border);
+  --color-line-strong: var(--surface-border-strong);
+  --color-glass: var(--surface-glass);
+  --color-glass-strong: var(--surface-glass-strong);
+  --color-veil: var(--surface-veil);
+  --color-ink: var(--text-primary);
+  --color-ink-soft: var(--text-secondary);
+  --color-ink-muted: var(--text-muted);
+  --color-ink-inverse: var(--text-inverse);
+}
+
+/* ===========================================================================
+   Base layer
+   =========================================================================== */
+
+@layer base {
+  * {
+    border-color: var(--surface-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--surface-page);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100dvh;
+  }
+
+  /* Switching palette or mode crossfades rather than snapping. Restricted to
+     the properties that actually change, so it never delays a layout, and
+     excluded from anything being dragged or animated for other reasons. */
+  .theme-transition,
+  .theme-transition *:not(svg *) {
+    transition:
+      background-color var(--duration-base) var(--ease-out-soft),
+      border-color var(--duration-base) var(--ease-out-soft),
+      color var(--duration-base) var(--ease-out-soft) !important;
+  }
+
+  /* The ambient wash. Fixed and non-interactive, so it never scrolls with the
+     content or intercepts a click. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(60rem 40rem at 12% -8%, var(--ambient-one), transparent 60%),
+      radial-gradient(50rem 36rem at 92% 4%, var(--ambient-two), transparent 58%),
+      radial-gradient(42rem 30rem at 68% 96%, var(--ambient-three), transparent 62%);
+  }
+
+  /* Headings read as one family: tight tracking, balanced wrapping. */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  /* A visible focus ring is a hard requirement, not a default to be removed:
+     the whole application must be operable from the keyboard. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+    border-radius: var(--radius-md);
+  }
+
+  /* Tabular figures keep attendance times and salary columns aligned. */
+  .numeric {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* A scrollbar that belongs to the surface rather than the operating system. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-border-strong) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--surface-border-strong);
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-muted);
+    background-clip: content-box;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ===========================================================================
+   Component utilities
+   =========================================================================== */
+
+@layer components {
+  /* Skip link: hidden until focused, then the first thing a keyboard user hits. */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    z-index: 100;
+  }
+
+  .skip-link:focus {
+    left: 1rem;
+    top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--surface-raised);
+    box-shadow: var(--shadow-overlay);
+    border-radius: var(--radius-md);
+  }
+
+  /* Translucent panel over the ambient wash. `backdrop-filter` is the whole
+     effect; without support the colour alone still reads as a panel. */
+  .glass {
+    background-color: var(--surface-glass);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+  }
+
+  .glass-strong {
+    background-color: var(--surface-glass-strong);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+  }
+
+  /* The hairline highlight along a panel's top edge. One pixel of light is
+     what separates a lit surface from a painted rectangle. */
+  .edge-light {
+    position: relative;
+  }
+
+  .edge-light::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--surface-highlight), transparent);
+    pointer-events: none;
+  }
+
+  .hover-lift {
+    transition:
+      transform var(--duration-base) var(--ease-out-soft),
+      box-shadow var(--duration-base) var(--ease-out-soft),
+      border-color var(--duration-base) var(--ease-out-soft);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lifted);
+  }
+
+  /* Form controls.
+     A field is a slightly sunken surface that lights up on focus: an inset
+     shadow at rest, a soft brand halo plus a solid border on focus. The halo
+     is a box-shadow rather than an outline so it can be coloured and blurred,
+     and the base `:focus-visible` outline is suppressed only because this
+     replacement is more visible, not less. */
+  .field-control {
+    width: 100%;
+    background-color: var(--surface-field);
+    border: 1px solid var(--surface-border-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-field-inset);
+    color: var(--text-primary);
+    transition:
+      border-color var(--duration-fast) var(--ease-out-soft),
+      box-shadow var(--duration-fast) var(--ease-out-soft),
+      background-color var(--duration-fast) var(--ease-out-soft);
+  }
+
+  .field-control:hover:not(:disabled):not(:focus) {
+    border-color: var(--color-brand-400);
+  }
+
+  .field-control:focus,
+  .field-control:focus-visible {
+    outline: none;
+    background-color: var(--surface-raised);
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3.5px var(--ring-focus);
+  }
+
+  .field-control:disabled {
+    background-color: var(--surface-sunken);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .field-control[aria-invalid='true'] {
+    border-color: var(--color-danger-600);
+  }
+
+  .field-control[aria-invalid='true']:focus {
+    border-color: var(--color-danger-600);
+    box-shadow: 0 0 0 3.5px oklch(0.58 0.2 23 / 0.18);
+  }
+
+  /* The same field, as a container holding its own buttons - a date input with
+     a calendar trigger, a search box with a clear button. It lights up from
+     `:focus-within` so the whole control responds when the caret is inside it,
+     rather than only the bare input looking focused while the frame around it
+     stays asleep. */
+  .field-group {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background-color: var(--surface-field);
+    border: 1px solid var(--surface-border-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-field-inset);
+    color: var(--text-primary);
+    transition:
+      border-color var(--duration-fast) var(--ease-out-soft),
+      box-shadow var(--duration-fast) var(--ease-out-soft),
+      background-color var(--duration-fast) var(--ease-out-soft);
+  }
+
+  .field-group:hover:not(:focus-within):not([data-disabled='true']) {
+    border-color: var(--color-brand-400);
+  }
+
+  .field-group:focus-within {
+    background-color: var(--surface-raised);
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3.5px var(--ring-focus);
+  }
+
+  .field-group[data-invalid='true'] {
+    border-color: var(--color-danger-600);
+  }
+
+  .field-group[data-invalid='true']:focus-within {
+    box-shadow: 0 0 0 3.5px oklch(0.58 0.2 23 / 0.18);
+  }
+
+  .field-group[data-disabled='true'] {
+    background-color: var(--surface-sunken);
+    color: var(--text-muted);
+    box-shadow: none;
+  }
+
+  /* An input that lives inside a .field-group: no frame of its own, since the
+     group draws it. */
+  .field-bare {
+    min-width: 0;
+    flex: 1 1 0%;
+    background-color: transparent;
+    border: 0;
+    outline: none;
+    color: inherit;
+  }
+
+  .field-bare:disabled {
+    cursor: not-allowed;
+  }
+
+  /* Skeleton shimmer. A moving highlight reads as "loading"; a static grey
+     block reads as "broken". */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--surface-sunken);
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, var(--surface-highlight), transparent);
+    animation: shimmer 1.6s infinite;
+  }
+
+  .text-gradient {
+    background: linear-gradient(
+      100deg,
+      var(--color-brand-500),
+      var(--color-cool-500) 55%,
+      var(--color-accent-500)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Entrance. Applied to a container, children arrive in sequence - the eye
+     follows the order the page means to be read in. */
+  .animate-in {
+    animation: rise var(--duration-slow) var(--ease-out-soft) both;
+  }
+
+  .stagger > * {
+    animation: rise var(--duration-slow) var(--ease-out-soft) both;
+  }
+
+  .stagger > *:nth-child(1) {
+    animation-delay: 20ms;
+  }
+  .stagger > *:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  .stagger > *:nth-child(3) {
+    animation-delay: 100ms;
+  }
+  .stagger > *:nth-child(4) {
+    animation-delay: 140ms;
+  }
+  .stagger > *:nth-child(5) {
+    animation-delay: 180ms;
+  }
+  .stagger > *:nth-child(6) {
+    animation-delay: 220ms;
+  }
+  .stagger > *:nth-child(n + 7) {
+    animation-delay: 260ms;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: var(--dash-length, 1000);
+  }
+}

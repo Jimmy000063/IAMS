@@ -1,0 +1,93 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "iams-backend"
+version = "0.1.0"
+description = "Ishvara Attendance Management System - HRMS backend"
+requires-python = ">=3.12"
+license = "LicenseRef-Proprietary"
+
+dependencies = [
+    "fastapi>=0.143,<0.144",
+    "uvicorn[standard]>=0.54,<0.55",
+    "pydantic>=2.14,<3",
+    "pydantic-settings>=2.15,<3",
+    "email-validator>=2.3,<3",
+    "sqlalchemy>=2.1,<2.2",
+    "alembic>=1.20,<2",
+    "psycopg[binary]>=3.3,<4",
+    "argon2-cffi>=25.1,<26",
+    # Fernet, for field-level encryption of bank account numbers and PAN.
+    "cryptography>=50,<51",
+    "pyjwt>=2.15,<3",
+    "python-multipart>=0.0.32,<0.1",
+    "typer>=0.27,<0.28",
+    "python-dateutil>=2.9,<3",
+    # Excel export for reports. MIT-licensed and offline; CSV needs no library,
+    # but the brief asks for Excel and a real .xlsx is better than a CSV
+    # renamed to look like one.
+    "openpyxl>=3.1,<4",
+    "tzdata>=2026.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.1,<10",
+    "pytest-cov>=7.1,<8",
+    # Required, not optional: `addopts` below passes `-n 4 --dist loadfile`, so
+    # without xdist pytest refuses to start at all. It was installed ad hoc for
+    # a while and missing from here, which meant a fresh `pip install -e
+    # ".[dev]"` produced an environment that could not run the suite.
+    "pytest-xdist>=3.6,<4",
+    "httpx>=0.28,<0.29",
+    "ruff>=0.14",
+]
+
+[project.scripts]
+iams = "app.cli.main:app"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q --strict-markers -n 4 --dist loadfile"
+# Four workers, each with its own database (see tests/conftest.py). Four is a
+# deliberate cap rather than "auto": the suite saturates a 4-core machine at
+# eight, and the failures then look like unrelated database errors. Override
+# with `-n 0` for a serial run when reading a traceback.
+#
+# `--dist loadfile` keeps a whole test file on one worker, so module-level
+# fixtures are built once per file rather than once per worker.
+markers = [
+    "unit: pure business-rule tests, no database",
+    "integration: tests that require a live PostgreSQL database",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "N", "SIM"]
+ignore = [
+    # FastAPI's dependency injection is expressed as function-call defaults.
+    "B008",
+    # Domain exceptions read better at call sites without an "Error" suffix:
+    # `raise PermissionDenied()` and `raise NotFound()` say what happened. The
+    # base class AppError carries the suffix.
+    "N818",
+    # Page[T] uses Generic[T] deliberately: PEP 695 type parameters on Pydantic
+    # generic models are newer ground, and this form is unambiguous.
+    "UP046",
+    # Likewise for the TypeVar-based generic helpers in org.service: the
+    # constrained-TypeVar form reads more clearly here than inline PEP 695
+    # constraints, and both are valid on the supported Python versions.
+    "UP047",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"alembic/versions/*" = ["E501"]

@@ -1,0 +1,63 @@
+# --- secrets -----------------------------------------------------------------
+# Never commit a real environment file. Only *.example files belong in git.
+.env
+.env.*
+!.env.example
+!*.env.example
+*.pem
+*.key
+secrets/
+
+# --- python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+# .venv* rather than .venv: a virtual environment parked under another name
+# while debugging - .venv_broken_313, say - is still 80 MB of compiled wheels
+# that must not reach the repository.
+.venv*/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# --- node --------------------------------------------------------------------
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+npm-debug.log*
+playwright-report/
+test-results/
+
+# --- uploads and backups -----------------------------------------------------
+# Employee documents and database dumps are confidential and must stay out of
+# source control.
+storage/
+uploads/
+backups/
+*.dump
+*.sql.gz
+
+# --- editors and os ----------------------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Uploaded employment documents (confidential).
+backend/storage/
+
+# --- never ignore these -------------------------------------------------------
+# A checkout is useless without the lock files and the setup scripts: they are
+# what make one command reproduce this environment somewhere else.
+!backend/requirements.txt
+!backend/requirements-dev.txt
+!frontend/package-lock.json
+!scripts/

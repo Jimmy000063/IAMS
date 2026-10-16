@@ -1,0 +1,33 @@
+# Line endings
+# -----------------------------------------------------------------------------
+# Git on Windows converts LF to CRLF on checkout by default. For most files that
+# is harmless, but a shell script with carriage returns does not run: bash reads
+# the \r as part of the command and reports "No such file or directory" for a
+# line that is plainly there. Anything executed by a POSIX shell is therefore
+# pinned to LF regardless of the platform it is checked out on.
+
+* text=auto
+
+*.sh text eol=lf
+*.bash text eol=lf
+
+# PowerShell is fine with either, but keeping it CRLF matches the platform it
+# runs on and avoids a diff the first time somebody edits it in a Windows editor.
+*.ps1 text eol=crlf
+
+# Nothing should rewrite these.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.xlsx binary
+*.woff binary
+*.woff2 binary
+
+# Generated and vendored files: collapse them in pull request diffs so a lock
+# file change does not bury the code it accompanies.
+frontend/package-lock.json linguist-generated=true -diff
+backend/requirements.txt linguist-generated=true
+backend/requirements-dev.txt linguist-generated=true
